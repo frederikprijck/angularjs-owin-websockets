@@ -1,13 +1,27 @@
 import { WSFactoryService } from './ws-factory.service';
+import { Subject } from 'rxjs/Rx';
+
+export class RealTimeMessage {
+  type: string;
+  payload: any;
+}
+
+export enum RealTimeStatus {
+    open,
+    closed
+}
 
 export class RealTimeService {
 
     isOpen = false;
     socket: WebSocket;
-    onMessageRecieved: Function;
+
+    message$: Subject<RealTimeMessage> = new Subject<RealTimeMessage>();
+    status$: Subject<RealTimeStatus> = new Subject<RealTimeStatus>();
 
     constructor(
-        private wsFactoryService: WSFactoryService
+        private wsFactoryService: WSFactoryService,
+        private $rootScope: ng.IScope
     ) {
 
     }
@@ -16,11 +30,11 @@ export class RealTimeService {
         this.socket = this.wsFactoryService.create();
 
         this.socket.onopen = (event) => {
-            this.isOpen = true;
+            this.status$.next(RealTimeStatus.open);
         };
 
         this.socket.onclose = (event) => {
-            this.isOpen = false;
+            this.status$.next(RealTimeStatus.closed);
         };
 
         this.socket.onerror = (errorEvent) => {
@@ -28,9 +42,8 @@ export class RealTimeService {
         };
 
         this.socket.onmessage = (messageEvent) => {
-            if (this.onMessageRecieved) {
-                this.onMessageRecieved(messageEvent.data);
-            }
+            this.message$.next(JSON.parse(messageEvent.data));
+            this.$rootScope.$evalAsync();
         };
     }
 

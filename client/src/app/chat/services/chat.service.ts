@@ -1,22 +1,31 @@
 // temporary, until https://github.com/Microsoft/TypeScript/issues/10178 is implemented
 import * as angular from 'angular';
-import { RealTimeService } from './../../real-time/services/real-time.service';
+import { RealTimeService, RealTimeMessage } from './../../real-time/services/real-time.service';
+import { Observable } from 'rxjs/Observable';
+
+export class ChatMessage {
+    message: string;
+    user: string;
+}
 
 export class ChatService {
 
-    onMessageRecieved: Function;
+    chatMessage$: Observable<ChatMessage>;
 
     constructor(
         private realTimeService: RealTimeService
     ) {
-        this.realTimeService.onMessageRecieved = (message: string) => {
-            this.onMessageRecieved(message);
-        };
+        this.chatMessage$ = this.realTimeService.message$
+            .filter(message => message.type === 'chatMessage')
+            .map(message => {
+                return {
+                    message: message.payload,
+                    user: 'unknown'
+                };
+            });
     }
 
     sendMessage(message: string) {
-        if (this.realTimeService) {
-            this.realTimeService.send(message);
-        }
+        this.realTimeService.send(message);
     }
 }

@@ -11,7 +11,7 @@ export class ChatList implements angular.IComponentOptions {
         };
         this.template = `
         <div ng-repeat="item in $ctrl.items track by $index">
-          {{ item }}
+          {{ item.message }}
         </div>
         `;
     }

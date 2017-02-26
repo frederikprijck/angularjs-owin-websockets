@@ -2,8 +2,9 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
-using System.Timers;
 using Microsoft.Owin;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Owin.WebSocket;
 using Server.Chat;
 
@@ -16,7 +17,7 @@ namespace Server.Connections
             var json = Encoding.UTF8.GetString(message.Array, message.Offset, message.Count);
             var chatServer = ChatServer.Instance;
             chatServer.AddMessage(json);
-            
+
             return Task.CompletedTask;
         }
 
@@ -26,7 +27,11 @@ namespace Server.Connections
 
             chatServer.MessageRecieved += message =>
             {
-                SendText(Encoding.UTF8.GetBytes(message), true);
+                var action = new WebSocketAction<string>("chatMessage", message);
+                SendText(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(action, Formatting.None, new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                })), true);
             };
         }
 
