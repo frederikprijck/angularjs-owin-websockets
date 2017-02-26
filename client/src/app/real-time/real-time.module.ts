@@ -7,7 +7,7 @@ import * as angular from 'angular';
 import { RealTimeService } from './services/real-time.service';
 
 /**
- * Factories
+ * Providers
  */
 import { WSFactoryServiceProvider } from './services/ws-factory.service.provider';
 
@@ -16,7 +16,7 @@ export const moduleName =
     angular.module('application.realTime', [])
 
     /**
-     * Services
+     * Providers
      */
     .provider('wsFactoryService', WSFactoryServiceProvider)
 
